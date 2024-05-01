@@ -1,0 +1,43 @@
+[{
+  "type": "lbrace",
+  "patterns": ["{"]
+}, {
+  "type": "rbrace",
+  "patterns": ["}"]
+}, {
+  "type": "lbrack",
+  "patterns": ["["]
+}, {
+  "type": "rbrack",
+  "patterns": ["]"]
+}, {
+  "type": "lparen",
+  "patterns": ["("]
+}, {
+  "type": "rparen",
+  "patterns": [")"]
+}, {
+  "type": "boolean",
+  "patterns": ["true", "false"]
+}, {
+  "type": "null",
+  "patterns": ["null"]
+}, {
+  "type": "number",
+  "patterns": ["-?%d+[%d_]*", "-?%d+[%d_]*%.[%d_]+"]
+}, {
+  "type": "string",
+  "patterns": ["%b\"\""]
+}, {
+  "type": "comment",
+  "patterns": ["#.-\n"]
+}, {
+  "type": "identifier",
+  "patterns": ["[_%a]+[_%w]*"]
+}, {
+  "type": "whitespace",
+  "patterns": ["%s+"]
+}, {
+  "type": "undefined",
+  "patterns": ["."]
+}]

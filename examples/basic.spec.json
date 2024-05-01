@@ -1,0 +1,10 @@
+[{
+  "type": "word",
+  "patterns": ["%w+"]
+}, {
+  "type": "number",
+  "patterns": ["%d+"]
+}, {
+  "type": "undefined",
+  "patterns": ["."]
+}]
