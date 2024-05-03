@@ -4,9 +4,10 @@ ifeq ($(OS),Windows_NT)
 	EXT = .exe
 endif
 
-all: cli
+debug: cli/cli.odin bin
+	odin build cli -o:none -debug -out:bin/tokenizer$(EXT)
 
-cli: cli/cli.odin bin
+release: cli/cli.odin bin
 	odin build cli -o:speed -out:bin/tokenizer$(EXT)
 
 bin: cli/cli.odin

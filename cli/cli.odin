@@ -29,21 +29,22 @@ parse_argv :: proc() -> (AppConfig) {
     config: AppConfig = {nil, "", false, ""}
 
     if len(os.args) == 1 {
-        fmt.eprintf(
+        throw(
             "Usage: %s [options] file...\n" +
             "Options:\n" +
             "  -spec <file>         Token spec file to use during tokenization.\n" +
             "  -out <file>          Optional, write output to a file instead of stdout.\n" +
-            "  -pretty              Optional, pretty print output JSON.\n",
+            "  -pretty              Optional, pretty print output JSON.",
             filepath.base(os.args[0])
         )
-        os.exit(1)
     }
 
     for i := 1; i < len(os.args); i += 1 {
         if os.args[i] == "-spec" && i + 1 < len(os.args) {
             i += 1
-            config.spec = tokenizer.read_token_spec_json(os.args[i])
+            spec_array, ok := tokenizer.read_token_spec_json(os.args[i])
+            if !ok do throw("Failed to read token spec: %s", os.args[i])
+            config.spec = spec_array
 
         } else if os.args[i] == "-out" && i + 1 < len(os.args) {
             i += 1
@@ -57,10 +58,7 @@ parse_argv :: proc() -> (AppConfig) {
         }
     }
 
-    if config.spec == nil {
-        fmt.eprintln("No spec file provided!")
-        os.exit(1)
-    }
+    if config.spec == nil do throw("No spec file provided!")
 
     if len(config.text) == 0 {
         config.text = string(read_stdin_bytes())
@@ -73,10 +71,7 @@ parse_argv :: proc() -> (AppConfig) {
 @(private)
 json_bytefy :: proc(data: any, pretty: bool) -> []byte {
     bytes, err := json.marshal(data, {pretty = pretty, use_spaces = true, spaces = 2})
-    if err != nil {
-        fmt.eprintln("Failed to convert data to JSON:", err)
-        os.exit(1)
-    }
+    if err != nil do throw("Failed to convert data to JSON:", err)
     return bytes
 }
 
@@ -84,10 +79,7 @@ json_bytefy :: proc(data: any, pretty: bool) -> []byte {
 @(private)
 read_stdin_bytes :: proc() -> []byte {
     bytes, ok := os.read_entire_file_from_handle(os.stdin)
-    if !ok {
-        fmt.eprintfln("Failed to read stdin! Did you forget to pass a source file or pipe text into stdin?")
-        os.exit(1)
-    }
+    if !ok do throw("Failed to read stdin! Did you forget to pass a source file or pipe text into stdin?")
     return bytes
 }
 
@@ -95,9 +87,13 @@ read_stdin_bytes :: proc() -> []byte {
 @(private)
 read_file_bytes :: proc(path: string) -> []byte {
     bytes, ok := os.read_entire_file(path)
-    if !ok {
-        fmt.eprintfln("Failed to read file: %s!", path)
-        os.exit(1)
-    }
+    if !ok do throw("Failed to read file: %s!", path)
     return bytes
+}
+
+
+@(private)
+throw :: proc(format_string: string, args: ..any) {
+    fmt.eprintfln(format_string, ..args)
+    os.exit(1)
 }

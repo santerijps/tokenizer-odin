@@ -24,7 +24,7 @@ token_iter_next :: proc(iter: ^TokenIterator) -> (token: Token, ok: bool) {
                 matcher := match.matcher_init(iter.text, pattern, i)
                 value, ok := match.matcher_match(&matcher)
                 if ok {
-                    line, column := get_line_and_column(iter.text, i)
+                    line, column := get_location(iter.text, i)
                     token.type = spec.type
                     token.value = value
                     token.line = line
@@ -50,8 +50,25 @@ tokenize :: proc(text: string, spec_array: []TokenSpec) -> (tokens: [dynamic]Tok
 }
 
 
+read_token_spec_json :: proc(path: string) -> (spec_array: []TokenSpec, ok: bool) {
+    if bytes, ok := os.read_entire_file(path); ok {
+        return parse_token_spec_json(bytes)
+    } else {
+        return nil, false
+    }
+}
+
+
+parse_token_spec_json :: proc(json_bytes: []byte) -> (spec_array: []TokenSpec, ok: bool) {
+    err := json.unmarshal(json_bytes, &spec_array)
+    if err != nil do return nil, false
+    prefix_patterns_with_caret(&spec_array)
+    return spec_array, true
+}
+
+
 @(private)
-get_line_and_column :: proc(text: string, index: int) -> (line, column: uint) {
+get_location :: proc(text: string, index: int) -> (line, column: uint) {
     line, column = 1, 1
     for i := 0; i < index; i += 1 {
         if text[i] == '\n' {
@@ -66,24 +83,8 @@ get_line_and_column :: proc(text: string, index: int) -> (line, column: uint) {
 }
 
 
-read_token_spec_json :: proc(path: string) -> []TokenSpec {
-    bytes, ok := os.read_entire_file(path)
-    if !ok {
-        fmt.eprintfln("Failed to read file: %s", path)
-        os.exit(1)
-    }
-    return parse_token_spec_json(bytes)
-}
-
-
-parse_token_spec_json :: proc(json_bytes: []byte) -> (spec_array: []TokenSpec) {
-    err := json.unmarshal(json_bytes, &spec_array)
-    if err != nil {
-        fmt.eprintln("Invalid spec file!", err)
-        os.exit(1)
-    }
-
-    // Prefix patterns with ^ to ensure that only that start of text is matched
+@(private)
+prefix_patterns_with_caret :: proc(spec_array: ^[]TokenSpec) {
     for spec in spec_array {
         for i := 0; i < len(spec.patterns); i += 1 {
             if !strings.has_prefix(spec.patterns[i], "^") {
@@ -91,6 +92,4 @@ parse_token_spec_json :: proc(json_bytes: []byte) -> (spec_array: []TokenSpec) {
             }
         }
     }
-
-    return spec_array
 }

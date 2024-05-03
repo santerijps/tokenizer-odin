@@ -26,8 +26,8 @@ token_iter_next :: proc(iter: ^TokenIterator) -> (token: Token, ok: bool)
 tokenize :: proc(text: string, spec_array: []TokenSpec) -> (tokens: [dynamic]Token)
 
 // Token spec functions
-read_token_spec_json :: proc(path: string) -> []TokenSpec
-parse_token_spec_json :: proc(json_bytes: []byte) -> (spec_array: []TokenSpec)
+read_token_spec_json :: proc(path: string) -> (spec_array: []TokenSpec, ok: bool)
+parse_token_spec_json :: proc(json_bytes: []byte) -> (spec_array: []TokenSpec, ok: bool)
 ```
 
 ## Command line executable
@@ -38,7 +38,8 @@ The command line executable can be built with `make`:
 
 ```bash
 cd tokenizer
-make cli
+make debug # no optimizations, create a .pdb file
+make release # optimize for speed
 ```
 
 See the [Makefile](./Makefile) for compilation details.
