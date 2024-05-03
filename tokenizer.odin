@@ -1,7 +1,6 @@
 package tokenizer
 
 import "core:encoding/json"
-import "core:fmt"
 import "core:os"
 import "core:strings"
 import "core:text/match"
